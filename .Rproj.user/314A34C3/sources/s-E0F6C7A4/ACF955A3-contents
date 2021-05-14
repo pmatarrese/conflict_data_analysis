@@ -1,0 +1,541 @@
+## Title: ITEC-SIS 724
+# Name: Peter Matarrese
+# Date: 02/16/2021
+# Topic: Social Media and Deductive Tools: Twitter/Facebook, Dictionaries, and Sentiment Analysis
+
+## In this lab, we will focus on mining and analyzing social media data (by looking at Twitter data). We will be analyzing both secondary data and collecting your own primary twitter data) We will then turn to dictionary development, and specifically sentiment analysis. The lab has three parts; and then a bonus section on Social Network Analysis.
+
+# PART 1: Capturing and analyzing Twitter data
+# PART 2: Accessing and understanding existing sentiment dictionaries
+# PART 3: Applying sentiment dictionaries to analyze a dataset
+# Bonus: SNA with R (SNA, igraph, network) 
+
+# PRE-LAB
+
+# One tremendously popular source of big data for text analysis is Twitter. There are a number of ways to acquire Twitter for analysis:
+
+#1. Use Existing Twitter datasets
+#   https://github.com/shaypal5/awesome-twitter-data
+#   https://github.com/fivethirtyeight/russian-troll-tweets/
+#   https://data.world/datasets/twitter (must join to use)
+#   https://www.kaggle.com/crowdflower/twitter-airline-sentiment
+#   https://www.kaggle.com/crowdflower/first-gop-debate-twitter-sentiment
+
+#2. Download your own Twitter archive
+#   https://help.twitter.com/en/managing-your-account/how-to-download-your-twitter-archive
+
+#3. Register as a Twitter developer and use the API in one of the following packages:
+
+# install.packages("twitteR")
+# install.packages("rtweet")
+
+# The following is not required for the lab, but if you want to collect Twitter data on your own, you will need to follow the procedure below. Unfortunately, the helpful feature of the rtweet package that allowed users to collect Twitter data without API credentials has been deactivated. All users will now need their own Twitter developer credentials in order to access the Twitter API. To obtain your own Twitter developer credentials, go to http://developer.twitter.com. An tutorial on the process may be found here: https://cran.r-project.org/web/packages/rtweet/vignettes/auth.html.
+
+# Once you acquire your API credentials, set up access to Twitter by using the current Twitter OAUTH process outlined below. You will substitute my green text below (e,g, "your_appname") with your actual credentials. You can save this information in a separate script to authorize it; but on the script you submit DO NOT INCLUDE your secret information.
+
+# appname <- "your_appname"
+# key <- "your_consumer_key"
+# secret <- "your_consumer_secret"
+# access_token <- "your_access_token"
+# access_secret <- "your_access_secret"
+
+# Now, to authorize your credentials, you will need internet access. and run the following code:
+
+# twitter_token <- create_token(
+#   app = appname,
+#   consumer_key = key,
+#   consumer_secret = secret,
+#   access_token = access_token,
+#   access_secret = access_secret)
+
+# When your credentials are authorized, you will see an object called "twitter_token" in your environment.  If you see this object, congratulations you are now ready to collect live Twitter data! Be very careful and do not share your API credentials with anyone.
+
+### End of Pre-Lab
+
+## PART 1. TWITTER DATA COLLECTION AND ANALYSIS
+
+# Let’s begin with an analysis of a large Twitter dataset called IRAhandle_tweets_1.csv. These Twitter handles were identified as being Russian controlled bots active during the US 2016 presidential election. I have provided to you for the lab. It is available from the popular politics site 538 at https://github.com/fivethirtyeight/russian-troll-tweets/
+
+# Load the following packages: rtweet, lubridate, ggplot2, dplyr, readr, twitteR (if they are not already installed, install them first).
+
+packages = c("rtweet", "lubridate", "ggplot2", "dplyr", "readr", "twitteR", "rtweet", "tidytext", "janeaustenr", "stringr", "tidyr", "wordcloud", "reshape2", "textdata") # lists all the packages I want to load
+
+temp = lapply(packages, function(x) {if (!x %in% row.names(installed.packages())) install.packages(x)}) # Check to see if the package is installed; if not, install it
+
+temp = lapply(packages, library, character.only = TRUE) # loads library for all packages
+
+##### DELIVERABLE 1: Using the read_csv() function, create an object called ira_tweets from the file "IRAhandle_tweets_1.csv". This data structure will be a Tibble, since we are using the read_csv() function. Once created, explore the object
+
+ira_tweets <- read_csv("IRAhandle_tweets_1.csv")
+
+#View(ira_tweets)
+
+ira_tweets %>%
+  mutate(external_author_id = as.character(external_author_id),
+         author = as.character(author),
+         region = as.factor(region),
+         language = as.factor(language),
+         publish_date = parse_date_time(publish_date, "mdY HM"),
+         harvested_date = parse_date_time(harvested_date, "mdY HM"),
+         account_type = as.factor(account_type),
+         account_category = as.factor(account_category),
+         retweet = as.factor(retweet),
+         new_june_2018 = as.factor(new_june_2018),
+         alt_external_id = as.character(alt_external_id),
+         tweet_id = as.character(tweet_id)) -> ira_tweets
+
+summary(ira_tweets)
+
+##### DELIVERABLE 2: How many tweets are there from each of the key variables in the dataset?
+
+# region, n=
+
+ira_tweets %>%
+  count(region, sort = TRUE)
+
+# language, n= 
+
+ira_tweets %>%
+  count(language, sort = TRUE)
+
+# account_type, n=
+
+ira_tweets %>%
+  count(account_type, sort = TRUE)
+
+# account_category, n=
+
+ira_tweets %>%
+  count(account_category, sort = TRUE)
+
+# Now, let's shift to collecting and analyzing data using rtweet
+
+# Load the following packages: rtweet, tidytext
+
+# NB: THE FOLLOWING DELIVERABLES ARE ONLY FOR THOSE THAT WANT TO COLLECT TWITTER DATA AND HAVE PROPER AUTHENTICATION. IF YOU DO NOT WANT TO COLLECT TWITTER DATA YOU MAY SKIP THESE DELIVERABLES AND MOVE ON TO PART II. 
+
+# In the pre-lab, we asked those interested in collecting Twitter data on their own to set up API access to Twitter using the current Twitter OAUTH process. You will see an object called twitter_token in your environment when your credentials are authorized. Be very careful and do not share your API credentials with anyone. You can save this information in a separate script to authorize it; but on the script you submit DO NOT INCLUDE your secret information.
+
+# appname <- "your_appname"
+# key <- "your_consumer_key"
+# secret <- "your_consumer_secret"
+# access_token <- "your_access_token"
+# access_secret <- "your_access_secret"
+# 
+# twitter_token <- create_token(
+#   app = appname,
+#   consumer_key = key,
+#   consumer_secret = secret,
+#   access_token = access_token,
+#   access_secret = access_secret)
+
+# As you work through the following examples, you might want to reduce the number of tweets you are requesting by changing the “n=“ to a smaller number. This will enable your data collection to go faster (and reduce storage).
+
+##### DELIVERABLE 3: Now, create an object called "rstatstweets", and examine the object. You may collect a maximum of 18,000 tweets with this code. It only goES back and collects tweets from the last 6-9 days. 
+
+rstatstweets <- search_tweets(q = "#rstats", n = 18000, include_rts = FALSE)
+
+View(rstatstweets)
+
+## preview users dataset
+
+rstats_users <- users_data(rstatstweets)
+
+## plot time series (if ggplot2 is installed)
+
+ts_plot(rstatstweets)
+
+## plot time series of tweets
+
+ts_plot(rstatstweets, "3 hours") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
+  ggplot2::labs(
+    x = NULL, y = NULL,
+    title = "Frequency of #rstats Twitter statuses from past 9 days",
+    subtitle = "Twitter status (tweet) counts aggregated using three-hour intervals",
+    caption = "\nSource: Data collected from Twitter's REST API via rtweet"
+  )
+
+## search for 250,000 tweets containing the word data
+
+#datatweets <- search_tweets("data", n = 250000, retryonratelimit = TRUE) commented out to not run again
+
+#save_as_csv(datatweets, "datatweets250k.csv") saved the pulled tweets to local .csv file so I can use the same ones if/when I rerun the script from scratch
+
+## Note: If you want to collect a larger amount of Twitter data, you may change the retryonratelimit = to TRUE. This will tell rtweet to collect as much of the requested target data (n=) and when it hits the “rate limit” where the twitter API stops you from collecting more data; it will pause for a bit; and then “retry”. rtweet will continue to try/pause/try until you reach your target number.
+
+View(datatweets)
+
+## search for 500 tweets sent from the US in English
+
+UStweets <- search_tweets("lang:en", geocode = lookup_coords("usa"), n = 500)
+
+head(UStweets)
+View(UStweets)
+
+## create lat/lng variables using all available tweet and profile geo-location data
+
+UStweetlatlong <- lat_lng(UStweets)
+
+## plot state boundaries
+
+par(mar = c(0, 0, 0, 0))
+maps::map("state", lwd = .25)
+
+## plot lat and lng points onto state map
+
+with(UStweetlatlong, points(lng, lat, pch = 20, cex = .75, col = rgb(0, .3, .7, .75)))
+
+## random sample for 30 seconds (default)
+
+randomtweets <- stream_tweets("")
+
+## stream tweets from london for 60 seconds
+
+londontweets <- stream_tweets(lookup_coords("london, uk"), timeout = 60)
+
+## stream london tweets for a week (60 secs x 60 mins * 24 hours *  7 days)
+
+stream_tweets(
+  "realdonaldtrump,trump",
+  timeout = 60,
+  file_name = "tweetsabouttrump.json",
+  parse = FALSE
+)
+
+## read in the data as a tidy tbl data frame
+
+djt <- parse_stream("tweetsabouttrump.json")
+
+View(djt)
+
+## get user IDs of accounts followed by CNN
+
+cnn_fds <- get_friends("cnn")
+
+## lookup data on those accounts
+
+cnn_fds_data <- lookup_users(cnn_fds$user_id)
+
+## get user IDs of accounts following CNN
+
+cnn_flw <- get_followers("cnn", n = 500)
+
+## lookup data on those accounts
+
+cnn_flw_data <- lookup_users(cnn_flw$user_id)
+
+## how many total follows does cnn have?
+
+cnn <- lookup_users("cnn")
+
+## get them all (this would take a little over 5 days)
+
+cnn_flw <- get_followers(
+  "cnn", n = cnn$followers_count, retryonratelimit = FALSE
+)
+
+## get user IDs of accounts followed by CNN
+
+tmls <- get_timelines(c("cnn", "BBCWorld", "foxnews"), n = 300)
+
+## plot the frequency of tweets for each user over time
+
+tmls %>%
+  dplyr::filter(created_at > "2017-10-29") %>%
+  dplyr::group_by(screen_name) %>%
+  ts_plot("days", trim = 1L) +
+  ggplot2::geom_point() +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.title = ggplot2::element_blank(),
+    legend.position = "bottom",
+    plot.title = ggplot2::element_text(face = "bold")) +
+  ggplot2::labs(
+    x = NULL, y = NULL,
+    title = "Frequency of Twitter statuses posted by news organization",
+    subtitle = "Twitter status (tweet) counts aggregated by day from October/November 2017",
+    caption = "\nSource: Data collected from Twitter's REST API via rtweet"
+  )
+
+jkr <- get_favorites("jk_rowling", n = 3000)
+
+View(jkr)
+
+## search for users with #rstats in their profiles
+
+usrs <- search_users("#rstats", n = 1000)
+
+sf <- get_trends("san francisco")
+
+View(sf)
+
+## lookup users by screen_name or user_id
+
+users <- c("KimKardashian", "justinbieber", "taylorswift13",
+           "espn", "JoelEmbiid", "cstonehoops", "KUHoops",
+           "upshotnyt", "fivethirtyeight", "hadleywickham",
+           "cnn", "foxnews", "msnbc", "maddow", "seanhannity",
+           "potus", "epa", "hillaryclinton", "realdonaldtrump",
+           "natesilver538", "ezraklein", "annecoulter")
+
+famous_tweeters <- lookup_users(users)
+
+View(famous_tweeters)
+
+## preview users data
+
+famous_tweeters
+
+# extract most recent tweets data from the famous tweeters
+
+tweets_data(famous_tweeters)
+
+# If you would like to post a tweet to your personal Twitter account (the one registered with the API), you may use the following post_tweet() function. NB: It will post this tweet on your Twitter timeline.
+
+post_tweet("my first rtweet #AU #rstats")
+
+## ty for the follow ;)
+
+#post_follow("")
+
+
+## PART 2. EXPLORING SENTIMENT ANALYSIS WITH TIDY DATA
+
+# Now, let's explore conducting a sentiment analysis with Tidy Data
+# We can use our understanding of the emotional intent of words to infer whether a section of text is positive or negative, or even more nuanced emotions like surprise or disgust
+
+# Before we begin this analysis, let's make sure all the packages we need are loaded.
+
+##### DELIVERABLE 3: Load the following packages: janeaustenr, dplyr, stringr, tidytext, tidyr, ggplot2, wordcloud, reshape2, textdata.
+
+
+# Already loaded at the beginning of the script
+
+
+# View the sentiments dictionary; including the word, sentiment associated with that word, which lexicon/dictionary it comes from (there are three; AFINN, Bing, and NRC) and the score
+
+sentiments
+head(sentiments)
+tail(sentiments)
+
+##### DELIVERABLE 4: Download the three separate lexicons contained within the sentiments package and explore them.
+
+get_sentiments("afinn")
+get_sentiments("bing")
+get_sentiments("nrc")
+
+## PART 3. APPLYING SENTIMENT ANALYSIS DICTIONARIES TO DATA
+
+# Now, let's look at performing a sentiment analysis using the inner join function (similiar to removing stop words with the anti-join function)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("^chapter [\\divxlc]",
+                                                 ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+##### DELIVERABLE 5: Create an object called nrcjoy, made from the sentiment "Joy" in the nrc lexicon; and apply that object to the book Emma.
+
+nrcjoy <- get_sentiments("nrc") %>%
+  filter(sentiment == "joy")
+
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrcjoy) %>%
+  count(word, sort = TRUE)
+
+# This allows us to see the positive and "happy" words in the book
+
+##### DELIVERABLE 6: Next create an object called janeaustensentiment and conduct a sentiment analysis of the Jane Austen books
+
+janeaustensentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+##### DELIVERABLE 7: Now visualize that sentiment analysis using ggplot2
+
+ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+
+##### DELIVERABLE 8: Now calculate and visualize the positive v negadtive sentiment in the books, and see which words contributes to each.
+
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word,n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment", x = NULL) +
+  coord_flip()
+
+##### DELIVERABLE 9: Now, create a custom stop word dictionary (or rather add a word "miss" to the dictionary)
+
+custom_stop_words <- bind_rows(tibble(word = c("miss"), lexicon = c("custom")), stop_words)
+
+custom_stop_words
+
+##### DELIVERABLE 11: Now, create a WordCloud visualization of the most frequent words in the object tidy_books
+
+tidy_books %>%
+  anti_join(custom_stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+
+##### DELIVERABLE 12: Now, reshape that visualization
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20","gray80"), max.words = 100)
+
+## BONUS - SOCIAL NETWORK ANALYSIS IN R
+# Drawn from the following tutorial: http://pablobarbera.com/big-data-upf/html/02a-networks-intro-visualization.html
+
+# Load the igraph package
+
+library(igraph)
+
+# read in edge and node data
+
+edges <- read.csv("star-wars-network-edges.csv")
+head(edges)
+
+nodes <- read.csv("star-wars-network-nodes.csv")
+head(nodes)
+
+
+
+# Create the igraph object "g"
+
+g <- graph_from_data_frame(d=edges, vertices=nodes, directed=FALSE)
+g
+
+# Accessing specific elements within the igraph object
+
+V(g)
+
+V(g)$name
+
+vertex_attr(g)
+
+E(g)
+
+E(g)$weight
+
+edge_attr(g)
+
+# Accessing the adjacency matrix
+
+g[]
+
+g[1,]
+
+## Begin network visualizaitons
+
+# Basic network plot
+
+par(mar=c(0,0,0,0))
+plot(g)
+
+# Improve on the basic plot
+
+par(mar=c(0,0,0,0))
+plot(g,
+     vertex.color = "grey", # change color of nodes
+     vertex.label.color = "black", # change color of labels
+     vertex.label.cex = .75, # change size of labels to 75% of original size
+     edge.curved=.25, # add a 25% curve to the edges
+     edge.color="grey20") # change edge color to grey
+
+# Modify some of the plot elements
+
+V(g)$size <- strength(g)
+par(mar=c(0,0,0,0)); plot(g)
+
+V(g)$size <- log(strength(g)) * 4 + 3
+par(mar=c(0,0,0,0)); plot(g)
+
+
+V(g)$label <- ifelse( strength(g)>=10, V(g)$name, NA )
+par(mar=c(0,0,0,0)); plot(g)
+
+# Understanding what "ifelse" does
+
+nodes$name=="R2-D2"
+ifelse(nodes$name=="R2-D2", "yes", "no")
+
+ifelse(grepl("R", nodes$name), "yes", "no")
+
+# Change the colors of each node based on what side there on in the movie (i.e. dark side or light side)
+
+dark_side <- c("DARTH VADER", "MOTTI", "TARKIN")
+light_side <- c("R2-D2", "CHEWBACCA", "C-3PO", "LUKE", "CAMIE", "BIGGS",
+                "LEIA", "BERU", "OWEN", "OBI-WAN", "HAN", "DODONNA",
+                "GOLD LEADER", "WEDGE", "RED LEADER", "RED TEN", "GOLD FIVE")
+other <- c("GREEDO", "JABBA")
+# node we'll create a new color variable as a node property
+V(g)$color <- NA
+V(g)$color[V(g)$name %in% dark_side] <- "red"
+V(g)$color[V(g)$name %in% light_side] <- "gold"
+V(g)$color[V(g)$name %in% other] <- "grey20"
+vertex_attr(g)
+
+# Now plot
+
+par(mar=c(0,0,0,0)); plot(g)
+
+# Understanding what %in% does
+
+1 %in% c(1,2,3,4)
+
+1 %in% c(2,3,4)
+
+# Adding a legend to indicate what the colors in the plot mean
+
+par(mar=c(0,0,0,0)); plot(g)
+legend(x=.75, y=.75, legend=c("Dark side", "Light side", "Other"), 
+       pch=21, pt.bg=c("red", "gold", "grey20"), pt.cex=2, bty="n")
+
+# Modify edge properties
+
+E(g)$width <- log(E(g)$weight) + 1
+edge_attr(g)
+
+# Plot
+
+par(mar=c(0,0,0,0)); plot(g)
+
+# Specifying a layout for the plot (e.g. Random, Circle, Star, Tree, Grid, Force-directed)
+
+par(mfrow=c(2, 3), mar=c(0,0,1,0))
+plot(g, layout=layout_randomly, main="Random")
+plot(g, layout=layout_in_circle, main="Circle")
+plot(g, layout=layout_as_star, main="Star")
+plot(g, layout=layout_as_tree, main="Tree")
+plot(g, layout=layout_on_grid, main="Grid")
+plot(g, layout=layout_with_fr, main="Force-directed")
+
+# force-directed layouts; and impact of choosing a different seed
+
+par(mfrow=c(1,2))
+set.seed(777)
+fr <- layout_with_fr(g, niter=1000)
+par(mar=c(0,0,0,0)); plot(g, layout=fr)
+set.seed(666)
+fr <- layout_with_fr(g, niter=1000)
+par(mar=c(0,0,0,0)); plot(g, layout=fr)

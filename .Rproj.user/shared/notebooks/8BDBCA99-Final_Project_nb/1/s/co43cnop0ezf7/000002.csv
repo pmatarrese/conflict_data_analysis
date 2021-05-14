@@ -1,0 +1,224 @@
+"0","source(""Scripts/fp_libraries.R"")"
+"2","Registered S3 methods overwritten by 'dbplyr':
+  method         from
+  print.tbl_lazy     
+  print.tbl_sql      
+"
+"2","[37m-- [1mAttaching packages[22m ----------------------------------------------------------------------- tidyverse 1.3.0 --[39m
+"
+"2","[37m[32mv[37m [34mggplot2[37m 3.3.3     [32mv[37m [34mpurrr  [37m 0.3.4
+[32mv[37m [34mtibble [37m 3.1.0     [32mv[37m [34mdplyr  [37m 1.0.5
+[32mv[37m [34mtidyr  [37m 1.1.3     [32mv[37m [34mstringr[37m 1.4.0
+[32mv[37m [34mreadr  [37m 1.4.0     [32mv[37m [34mforcats[37m 0.5.1[39m
+"
+"2","[37m-- [1mConflicts[22m -------------------------------------------------------------------------- tidyverse_conflicts() --
+[31mx[37m [34mdplyr[37m::[32mfilter()[37m masks [34mstats[37m::filter()
+[31mx[37m [34mdplyr[37m::[32mlag()[37m    masks [34mstats[37m::lag()[39m
+"
+"2","package ‘kableExtra’ was built under R version 4.0.5"
+"2","Registered S3 methods overwritten by 'htmltools':
+  method               from         
+  print.html           tools:rstudio
+  print.shiny.tag      tools:rstudio
+  print.shiny.tag.list tools:rstudio
+"
+"2","
+Attaching package: ‘kableExtra’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    group_rows
+
+"
+"2","
+Attaching package: ‘magrittr’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    set_names
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    extract
+
+"
+"2","package ‘data.table’ was built under R version 4.0.5"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"2","data.table 1.14.0 using 2 threads (see ?getDTthreads).  Latest news: r-datatable.com
+"
+"2","
+Attaching package: ‘data.table’
+
+"
+"2","The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    transpose
+
+"
+"2","package ‘sf’ was built under R version 4.0.5"
+"2","Linking to GEOS 3.9.0, GDAL 3.2.1, PROJ 7.2.1
+"
+"2","package ‘rnaturalearth’ was built under R version 4.0.5"
+"2","package ‘rnaturalearthdata’ was built under R version 4.0.5"
+"2","package ‘scales’ was built under R version 4.0.5"
+"2","
+Attaching package: ‘scales’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    discard
+
+"
+"2","The following object is masked from ‘package:readr’:
+
+    col_factor
+
+"
+"2","package ‘ggsci’ was built under R version 4.0.5"
+"2","package ‘tinytex’ was built under R version 4.0.5"
+"2","package ‘countrycode’ was built under R version 4.0.5"
+"2","package ‘ggspatial’ was built under R version 4.0.5"
+"2","package ‘magick’ was built under R version 4.0.5"
+"2","Linking to ImageMagick 6.9.12.3
+Enabled features: cairo, freetype, fftw, ghostscript, heic, lcms, pango, raw, rsvg, webp
+Disabled features: fontconfig, x11
+"
+"2","package ‘rgeos’ was built under R version 4.0.5"
+"2","Loading required package: sp
+"
+"2","package ‘sp’ was built under R version 4.0.5"
+"2","rgeos version: 0.5-5, (SVN revision 640)
+ GEOS runtime version: 3.8.0-CAPI-1.13.1 
+ Linking to sp version: 1.4-5 
+ Polygon checking: TRUE 
+
+"
+"0","source(""Scripts/fp_define_functions.R"")"
+"2","st_centroid assumes attributes are constant over geometries of x"
+"2","st_centroid does not give correct centroids for longitude/latitude data"
+"2","st_centroid does not give correct centroids for longitude/latitude data"
+"0","source(""Scripts/fp_create_subdirectories.R"")"
+"0","source(""Scripts/fp_generate_data.R"")"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m----------------------------------------------------------------------------------------[39m
+cols(
+  .default = col_double(),
+  conflict_name = [31mcol_character()[39m,
+  dyad_name = [31mcol_character()[39m,
+  side_a = [31mcol_character()[39m,
+  side_b = [31mcol_character()[39m,
+  source_article = [31mcol_character()[39m,
+  source_office = [31mcol_character()[39m,
+  source_date = [31mcol_character()[39m,
+  source_headline = [31mcol_character()[39m,
+  source_original = [31mcol_character()[39m,
+  where_coordinates = [31mcol_character()[39m,
+  adm_1 = [31mcol_character()[39m,
+  adm_2 = [31mcol_character()[39m,
+  geom_wkt = [31mcol_character()[39m,
+  country = [31mcol_character()[39m,
+  region = [31mcol_character()[39m,
+  date_start = [34mcol_date(format = """")[39m,
+  date_end = [34mcol_date(format = """")[39m
+)
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m for the full column specifications.
+
+"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m----------------------------------------------------------------------------------------[39m
+cols(
+  .default = col_double(),
+  conflict_name = [31mcol_character()[39m,
+  dyad_name = [31mcol_character()[39m,
+  side_a = [31mcol_character()[39m,
+  gwnob = [33mcol_logical()[39m,
+  side_b = [31mcol_character()[39m,
+  source_article = [31mcol_character()[39m,
+  source_office = [31mcol_character()[39m,
+  source_date = [31mcol_character()[39m,
+  source_headline = [31mcol_character()[39m,
+  source_original = [31mcol_character()[39m,
+  where_coordinates = [31mcol_character()[39m,
+  adm_1 = [31mcol_character()[39m,
+  adm_2 = [31mcol_character()[39m,
+  geom_wkt = [31mcol_character()[39m,
+  country = [31mcol_character()[39m,
+  region = [31mcol_character()[39m,
+  date_start = [34mcol_date(format = """")[39m,
+  date_end = [34mcol_date(format = """")[39m
+)
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m for the full column specifications.
+
+"
+"2","31 parsing failures.
+  row   col           expected actual                 file
+ 4332 gwnob 1/0/T/F/TRUE/FALSE    652 'Data/ged_syria.csv'
+ 9093 gwnob 1/0/T/F/TRUE/FALSE    652 'Data/ged_syria.csv'
+ 9208 gwnob 1/0/T/F/TRUE/FALSE    652 'Data/ged_syria.csv'
+12265 gwnob 1/0/T/F/TRUE/FALSE    666 'Data/ged_syria.csv'
+12973 gwnob 1/0/T/F/TRUE/FALSE    666 'Data/ged_syria.csv'
+..... ..... .................. ...... ....................
+See problems(...) for more details.
+"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m----------------------------------------------------------------------------------------[39m
+cols(
+  .default = col_double(),
+  `Series Name` = [31mcol_character()[39m,
+  `Series Code` = [31mcol_character()[39m,
+  `Country Name` = [31mcol_character()[39m,
+  `Country Code` = [31mcol_character()[39m,
+  `2019 [YR2019]` = [33mcol_logical()[39m
+)
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m for the full column specifications.
+
+"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m----------------------------------------------------------------------------------------[39m
+cols(
+  .default = col_double(),
+  `Series Name` = [31mcol_character()[39m,
+  `Series Code` = [31mcol_character()[39m,
+  `Country Name` = [31mcol_character()[39m,
+  `Country Code` = [31mcol_character()[39m,
+  `2019 [YR2019]` = [33mcol_logical()[39m
+)
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m for the full column specifications.
+
+"
+"2","
+[36m--[39m [1m[1mColumn specification[1m[22m [36m----------------------------------------------------------------------------------------[39m
+cols(
+  .default = col_double(),
+  `Series Name` = [31mcol_character()[39m,
+  `Series Code` = [31mcol_character()[39m,
+  `Country Name` = [31mcol_character()[39m,
+  `Country Code` = [31mcol_character()[39m,
+  `2019 [YR2019]` = [33mcol_logical()[39m
+)
+[36mi[39m Use [38;5;251m[48;5;235m[38;5;251m[48;5;235m`spec()`[48;5;235m[38;5;251m[49m[39m for the full column specifications.
+
+"
+"0","source(""Scripts/fp_transform_data.R"")"
+"2","Some values were not matched unambiguously: ABW, AND, ARB, ASM, ATG, BMU, CEB, CHI, CSS, CUW, CYM, DMA, EAP, EAR, EAS, ECA, ECS, EMU, EUU, FCS, FRO, FSM, GIB, GRD, GRL, GUM, HIC, HKG, HPC, IBD, IBT, IDA, IDB, IDX, IMN, INX, KIR, KNA, LAC, LCA, LCN, LDC, LIC, LIE, LMC, LMY, LTE, MAC, MAF, MCO, MEA, MHL, MIC, MNA, MNP, NAC, NCL, NRU, OED, OSS, PLW, PRE, PRI, PSE, PSS, PST, PYF, SAS, SMR, SSA, SSF, SST, STP, SXM, SYC, TCA, TEA, TEC, TLA, TMN, TON, TSA, TSS, TUV, UMC, VCT, VGB, VIR, VUT, WLD, WSM, YEM
+"
+"2","cannot remove file 'ged_syria.csv', reason 'No such file or directory'"
+"2","cannot remove file 'ged191.csv', reason 'No such file or directory'"
+"0","source(""Scripts/q1h1.R"")"
+"0","source(""Scripts/q1h2.R"")"
+"0","source(""Scripts/q2h1.R"")"
+"0","source(""Scripts/q3h1.R"")"
+"0","source(""Scripts/q4h1.R"")"
+"0","source(""Scripts/china.R"")"
